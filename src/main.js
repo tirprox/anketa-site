@@ -55,7 +55,7 @@ else {
 
 function requestData() {
   //axios.post('static/request-counterparty.php', {phone: counterparty.phone.number})
-  axios.post('https://dreamwhite.ru/api/v1/entities/counterparty/registration/get.php', {phone: counterparty.phone.number})
+  axios.post('/api/v1/entities/counterparty/registration/get.php', {phone: counterparty.phone.number})
     .then(function (response) {
       //console.log(response.data);
       counterparty.name=response.data.firstName || '';

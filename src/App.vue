@@ -464,7 +464,7 @@
 
       // create new counterparty
       createCounterparty: function() {
-        axios.post('https://dreamwhite.ru/api/v1/entities/counterparty/registration/post.php', {
+        axios.post('/api/v1/entities/counterparty/registration/post.php', {
           data: this.model
         })
           .then(function (response) {
@@ -477,7 +477,7 @@
 
       // update existing counterparty
       updateCounterparty: function() {
-        axios.post('https://dreamwhite.ru/api/v1/entities/counterparty/registration/put.php', {
+        axios.post('/api/v1/entities/counterparty/registration/put.php', {
           data: this.model
         })
           .then(function (response) {
