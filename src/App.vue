@@ -59,6 +59,8 @@
   import { ycity, ycountry, counterparty, reachGoal} from './main.js'
   //const Kladr = new kladrApi();
 
+
+
   let formWizard = null;
   let refs = null;
 
@@ -89,7 +91,8 @@
               full: ''
             },
             email: counterparty.email!==undefined ? counterparty.email : '',
-            birthday: counterparty.birthday || ''
+            birthday: counterparty.birthday || '',
+            promoCode: counterparty.promoCode || '',
           },
           infoSource: {
             isCustom: false,
@@ -116,7 +119,7 @@
             fields: [{
               type: "input",
               inputType: "text",
-              label: "Имя",
+              label: "Имя *",
               styleClasses: 'vc_col-sm-12 col-md-12',
               //placeholder: "Имя",
               model: "client.name",
@@ -129,7 +132,7 @@
                 type: "input",
                 inputType: "text",
                 styleClasses: 'vc_col-sm-12 col-md-12',
-                label: "Фамилия (по желанию)",
+                label: "Фамилия",
                 //placeholder: "Фамилия (по желанию)",
                 model: "client.lastName",
                 required: false,
@@ -156,7 +159,17 @@
                   invalidFormat: "Неправильный формат",
                   fieldIsRequired: "Необходимо ввести дату рождения",
                 })
-              },]
+              },
+              {
+                type: "input",
+                inputType: "text",
+                styleClasses: 'vc_col-sm-12 col-md-12',
+                label: "Промокод",
+                model: "client.promoCode",
+                required: false,
+              },
+
+            ]
           }]
         },
         secondTabSchema: {
@@ -164,22 +177,6 @@
             {
               legend: "Как Вы нас нашли?",
               fields: [
-                {
-                  type: "radios",
-                  values: ["Конкурс «Мисс и Мистер СПбГПМУ»"],
-                  label: "Конкурсы",
-                  model: "infoSource.source",
-                  required: true,
-                  validator: VueFormGenerator.validators.string.locale({
-                    fieldIsRequired: "Необходимо выбрать вариант из списка",
-                  }),
-                  onChanged: function (model, newVal, oldVal, field) {
-                    model.isCustomInfoSource = false;
-                    model.infoSourceCustom = "";
-                    formWizard.nextTab();
-                  },
-                  styleClasses: 'vc_col-sm-12 col-md-12'
-                },
                 {
                   type: "radios",
                   values: ["Яндекс поиск", "Google поиск", "Яндекс карты", "Google карты"],
@@ -294,35 +291,18 @@
                 inputType: "text",
                 set: function (model, value) {
                   model.client.location.city = value;
-                  this.queryCity(value);
+                  model.isAddress = model.client.location.city !== 'Санкт-Петербург' && model.client.location.city !== 'Москва';
+
                 },
-                //disabled: true,
                 styleClasses: 'vc_col-sm-6 col-md-6',
                 model: "client.location.city",
               },
-              /*{
-                type: "switch",
-                styleClasses: 'vc_col-sm-4 col-md-4',
-                label: "Заполнить адрес?",
-                model: "isAddress",
-                multi: true,
-                textOn: "Да",
-                textOff: "Нет"
-              },*/
-/*              {
-                type: "checkbox",
-                styleClasses: 'col-md-12 form-row form-row-first',
-                label: "Заполнить адрес?",
-                model: "isAddress",
-                textOn: "Да",
-                textOff: "Нет"
-              },*/
+
               {
                 type: "input",
                 label: "Адрес",
                 inputType: "text",
                 placeholder: 'Улица, дом, корпус, квартира',
-                //disabled: true,
                 visible(model) { return model.isAddress },
                 styleClasses: 'vc_col-sm-8 col-md-8',
                 model: "client.location.address",
@@ -333,7 +313,6 @@
                 placeholder: '123456',
                 visible(model) { return model.isAddress },
                 inputType: "text",
-                //disabled: true,
                 styleClasses: 'vc_col-sm-4 col-md-4',
                 model: "client.location.postcode",
               },
@@ -350,7 +329,7 @@
 
               {
                 type: "input",
-                label: "Телефон",
+                label: "Телефон *",
                 inputType: "text",
                 disabled: true,
                 styleClasses: 'vc_col-xs-3 vc_col-sm-1 col-md-2 phone-prefix',
@@ -387,7 +366,7 @@
               {
                 type: "input",
                 inputType: "text",
-                label: "Email",
+                label: "Email *",
                 styleClasses: 'vc_col-sm-6 vc_col-xs-12 col-md-6',
                 model: "client.email",
                 required: true,
@@ -464,7 +443,7 @@
 
       // create new counterparty
       createCounterparty: function() {
-        axios.post('/api/v1/entities/counterparty/registration/post.php', {
+        axios.post('/api/v2/entities/counterparty/registration/post.php', {
           data: this.model
         })
           .then(function (response) {
@@ -477,7 +456,7 @@
 
       // update existing counterparty
       updateCounterparty: function() {
-        axios.post('/api/v1/entities/counterparty/registration/put.php', {
+        axios.post('/api/v2/entities/counterparty/registration/put.php', {
           data: this.model
         })
           .then(function (response) {
@@ -486,6 +465,10 @@
           .catch(function (error) {
             console.log(error);
           });
+      },
+
+      checkAddress: function() {
+        this.model.isAddress = this.model.client.location.city !== 'Санкт-Петербург' && this.model.client.location.city !== 'Москва';
       },
 
       //Tab validation and goals
@@ -498,7 +481,7 @@
         reachGoal('anketa-reg-second-step-complete');
         this.model.client.location.country = counterparty.country!== '' ? counterparty.country : ycountry;
         this.model.client.location.city = counterparty.city!== '' ? counterparty.city : ycity;
-        this.model.isAddress = this.model.client.location.city !== 'Санкт-Петербург';
+        this.checkAddress();
         return this.$refs.secondTabForm.validate();
       },
       validateThirdTab: function () {
@@ -626,6 +609,10 @@
 
   .field-radios {
     padding: 0px;
+  }
+
+  label {
+  min-width: 96px;
   }
 
   label.is-checked {

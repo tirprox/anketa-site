@@ -42,6 +42,7 @@ if (counterparty.phone.number == null) {
   counterparty.city= '';
   counterparty.address= '';
   counterparty.postcode= '';
+  counterparty.promoCode= '';
   counterparty.isNew = true;
   counterparty.isFromSms = false;
   initVue();
@@ -78,6 +79,7 @@ function requestData() {
 
       counterparty.address=response.data.address || '';
       counterparty.postcode=response.data.postcode || '';
+      counterparty.promoCode=response.data.promoCode || '';
       counterparty.isNew = false;
 
       console.log(counterparty);
