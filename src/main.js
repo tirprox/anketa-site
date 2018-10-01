@@ -117,6 +117,11 @@ function reachGoal(goal) {
   if (window.yaCounter42085949 !== undefined) {
     window.yaCounter42085949.reachGoal(goal);
   }
+
+  if (window.yaCounter48896408 !== undefined) {
+    window.yaCounter48896408.reachGoal(goal);
+  }
+
   if (window.ga !== undefined) {
     ga('send', 'event', 'anketa-reg', goal, 'test');
   }
