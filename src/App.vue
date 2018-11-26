@@ -30,10 +30,14 @@
             <vue-form-generator :model="model" :schema="feedbackSchema" :options="formOptions"
                                 ref="feedback" id="feedback"></vue-form-generator>
           </div>
+
           <div class="agreement text-center">
             <hr>
             <b>Нажимая кнопку "Отправить", вы соглашаетесь на обработку Ваших персональных данных.</b>
             <hr>
+          </div>
+          <div class="notification text-center">
+            * При совершении покупки в шоу-румах скидка начинает действовать на следующий день
           </div>
         </tab-content>
 
@@ -56,8 +60,9 @@
   import {FormWizard, TabContent} from 'vue-form-wizard'
   import axios from 'axios'
 
-  import { ycity, ycountry, counterparty, reachGoal} from './main.js'
+  import { ycity, ycountry, counterparty, reachGoal, getClientId} from './main.js'
   //const Kladr = new kladrApi();
+
 
 
 
@@ -70,6 +75,7 @@
     name: 'app',
     mounted: function () {
       this.$nextTick(this.initFromCounterparty);
+      this.$nextTick(this.init());
     },
 
     data() {
@@ -81,7 +87,7 @@
             lastName: counterparty.lastName!==undefined ? counterparty.lastName : '',
             location: {
               country: counterparty.country || ycountry,
-              city: counterparty.country || ycity,
+              city: counterparty.city || ycity,
               address: counterparty.address || '',
               postcode: counterparty.postcode ||''
             },
@@ -93,6 +99,7 @@
             email: counterparty.email!==undefined ? counterparty.email : '',
             birthday: counterparty.birthday || '',
             promoCode: counterparty.promoCode || '',
+            metricaClientId: counterparty.metricaClientId || ''
           },
           infoSource: {
             isCustom: false,
@@ -408,6 +415,20 @@
         Kladr.getData(q, (err, result)=>{
           console.log(err, result);
         });
+      },
+      init() {
+        console.log('init')
+        this.model.client.metricaClientId = getClientId();
+        //this.model.client.phone.full  = this.fullPhone;
+
+        if (!counterparty.isNew) {
+          this.model.client.phone.full  = this.fullPhone;
+          this.setDateAndTime();
+          console.log(this.model);
+          this.updateCounterparty()
+        }
+
+        //this.updateCounterparty()
       },
 
       onChange: function () {

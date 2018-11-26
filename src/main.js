@@ -9,26 +9,19 @@ import VueFormGenerator from 'vue-form-generator';
 import axios from 'axios'
 import 'vue-form-wizard/dist/vue-form-wizard.min.css';
 
-
 Vue.use(VueFormGenerator);
 Vue.use(VueFormWizard);
-
 Vue.config.productionTip = false;
-
 
 let counterparty = [];
 counterparty.phone  = [];
-//let url = new URL(window.location.href);
 
 function getURLParameter(name) {
   return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
 }
 
 counterparty.phone.prefix = '+7';
-//counterparty.phone.number = url.searchParams.get("n");
 counterparty.phone.number = getURLParameter("n");
-
-console.log(counterparty.phone.number);
 
 if (counterparty.phone.number == null) {
 
@@ -43,6 +36,7 @@ if (counterparty.phone.number == null) {
   counterparty.address= '';
   counterparty.postcode= '';
   counterparty.promoCode= '';
+  //counterparty.metricaClientId = getClientId();
   counterparty.isNew = true;
   counterparty.isFromSms = false;
   initVue();
@@ -55,31 +49,22 @@ else {
 
 
 function requestData() {
-  //axios.post('static/request-counterparty.php', {phone: counterparty.phone.number})
-  axios.post('/api/v1/entities/counterparty/registration/get.php', {phone: counterparty.phone.number})
+  axios.post('/api/v2/entities/counterparty/registration/get.php', {phone: counterparty.phone.number})
     .then(function (response) {
       //console.log(response.data);
       counterparty.name=response.data.firstName || '';
       counterparty.lastName=response.data.lastName || '';
       counterparty.birthday=response.data.birthday || '';
-
       counterparty.email=response.data.email || '';
-
       counterparty.phone=response.data.phone || counterparty.phone;
-
-/*      if (counterparty.phone.number == null) {
-        counterparty.phone.number = '';
-      }*/
       counterparty.phone.number = formatPhone(counterparty.phone.number);
-
       counterparty.id=response.data.id || '';
-
       counterparty.country=response.data.country || '';
       counterparty.city=response.data.city || '';
-
       counterparty.address=response.data.address || '';
       counterparty.postcode=response.data.postcode || '';
       counterparty.promoCode=response.data.promoCode || '';
+      counterparty.metricaClientId=getClientId() || '';
       counterparty.isNew = false;
 
       console.log(counterparty);
@@ -106,26 +91,66 @@ window.onload = function() {
 
 let vm;
 function initVue() {
-  vm = new Vue({
-    el: '#app',
-    template: '<App/>',
-    components: {App}
-  });
+  var counter = getMetricaCounter();
+  if (counter === undefined) {
+    document.addEventListener('yacounter42085949inited', function() {
+      vm = new Vue({
+        el: '#app',
+        template: '<App/>',
+        components: {App}
+      });
+    });
+    document.addEventListener('yacounter48896408inited', function() {
+      vm = new Vue({
+        el: '#app',
+        template: '<App/>',
+        components: {App}
+      });
+    })
+  }
+  else {
+    vm = new Vue({
+      el: '#app',
+      template: '<App/>',
+      components: {App}
+    });
+  }
+
+
+
 }
 
-function reachGoal(goal) {
+function getMetricaCounter() {
+  var counter = null;
   if (window.yaCounter42085949 !== undefined) {
-    window.yaCounter42085949.reachGoal(goal);
+    counter = window.yaCounter42085949
   }
 
   if (window.yaCounter48896408 !== undefined) {
-    window.yaCounter48896408.reachGoal(goal);
+    counter = window.yaCounter48896408
   }
+  return counter;
+}
 
+function getClientId() {
+  var yaCounter = getMetricaCounter();
+  var clientID = null;
+  if (yaCounter!== null) {
+    clientID = getMetricaCounter().getClientID();
+  }
+  console.log('ClientID: ' + clientID);
+  return clientID;
+}
+
+function reachGoal(goal) {
+
+  var yaCounter = getMetricaCounter();
+  if (yaCounter!== null) {
+    yaCounter.reachGoal(goal);
+  }
   if (window.ga !== undefined) {
     ga('send', 'event', 'anketa-reg', goal, 'test');
   }
-
   console.log('Goals: ' + goal + ' reached!')
 }
 
@@ -145,5 +170,7 @@ export {
   ycity,
   ycountry,
   counterparty,
-  reachGoal
+  reachGoal,
+  getClientId,
+  getMetricaCounter
 }
